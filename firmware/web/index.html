@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Password Manager Setup</title>
+<style>
+:root{--bg:#0a0a0a;--card:#141414;--border:#252523;--inp:#1c1c1a;--accent:#378ADD;--text:#e8e8e0;--dim:#6a6a62;--ok:#27AE60;--err:#E74C3C;--warn:#E67E22;--r:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:20px 16px 48px}
+.wrap{max-width:420px;margin:0 auto}
+.logo{font-family:"Courier New",monospace;font-size:20px;letter-spacing:4px;color:var(--accent);text-align:center;padding-top:8px;margin-bottom:6px}
+.title{text-align:center;font-size:17px;font-weight:600;margin-bottom:3px}
+.sub{text-align:center;font-size:13px;color:var(--dim);margin-bottom:22px}
+.apb{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px 15px;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.apd{width:8px;height:8px;border-radius:50%;background:var(--ok);flex-shrink:0;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.tabs{display:flex;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:4px;margin-bottom:18px}
+.tab{flex:1;padding:10px;text-align:center;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;color:var(--dim);transition:all .2s}
+.tab.on{background:var(--accent);color:#fff}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:12px}
+.ch{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.ch-badge{font-size:10px;background:rgba(55,138,221,.15);color:var(--accent);padding:2px 7px;border-radius:4px;font-weight:500;text-transform:none;letter-spacing:0}
+.fg{margin-bottom:13px}.fg:last-child{margin-bottom:0}
+label{display:block;font-size:11px;color:var(--dim);margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+input,select{width:100%;background:var(--inp);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-size:15px;outline:none;-webkit-appearance:none;transition:border-color .2s}
+input:focus,select:focus{border-color:var(--accent)}
+input.valid{border-color:var(--ok)}
+input.invalid{border-color:var(--err)}
+input::placeholder{color:var(--dim);font-size:14px}
+.pw{position:relative}.pw input{padding-right:46px}
+.eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;padding:4px}
+.row2{display:flex;gap:8px}.row2 select{width:114px;flex-shrink:0}.row2 input{flex:1}
+.opt-label{font-size:11px;color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0}
+/* Password strength bar */
+.strength-bar{height:3px;border-radius:2px;margin-top:6px;background:var(--border);overflow:hidden;transition:all .3s}
+.strength-fill{height:100%;border-radius:2px;width:0;transition:width .3s,background .3s}
+.strength-checks{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.ck{font-size:10px;color:var(--dim);display:flex;align-items:center;gap:3px}
+.ck.ok{color:var(--ok)}.ck-dot{width:6px;height:6px;border-radius:50%;background:var(--border)}.ck.ok .ck-dot{background:var(--ok)}
+/* Notes */
+.note{border-radius:8px;padding:11px 14px;font-size:12px;line-height:1.65;margin-bottom:12px}
+.note.info{background:rgba(55,138,221,.08);border:1px solid rgba(55,138,221,.2);color:#7ab8e8}
+.note.err{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.25);color:#ff8a80;display:none}
+/* Button */
+.btn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:600;cursor:pointer;margin-top:4px;transition:opacity .2s}
+.btn:disabled{opacity:.4;cursor:default}
+/* Done */
+.done{display:none;text-align:center;padding:32px 8px}
+.steps{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-top:18px;text-align:left}
+.step{display:flex;gap:10px;align-items:flex-start;margin-bottom:11px;font-size:13px;line-height:1.5}.step:last-child{margin-bottom:0}
+.sn{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+option{background:#1c1c1a}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="logo">[ PM ]</div>
+<div class="title">Hardware Password Manager</div>
+<div class="sub">First-time device setup</div>
+
+<div class="apb">
+  <div class="apd"></div>
+  <div><div style="font-weight:600;font-size:13px">PwdMgr_Setup</div><div style="font-size:11px;color:var(--dim)">Local connection &middot; No internet required</div></div>
+</div>
+
+<div class="tabs">
+  <div class="tab on" onclick="sw('reg')">New Account</div>
+  <div class="tab" onclick="sw('res')">Restore Backup</div>
+</div>
+
+<!-- ======== REGISTRATION ======== -->
+<div id="t-reg">
+
+  <!-- Section 1: Credentials -->
+  <div class="card">
+    <div class="ch">Account credentials</div>
+    <div class="fg">
+      <label>Email address</label>
+      <input type="email" id="r-email" placeholder="you@example.com" autocomplete="off" oninput="checkEmail(this)">
+    </div>
+    <div class="fg">
+      <label>Password</label>
+      <div class="pw">
+        <input type="password" id="r-pass" placeholder="Min 8 chars" autocomplete="new-password" oninput="checkPass()">
+        <button class="eye" onclick="tog('r-pass',this)">Show</button>
+      </div>
+      <div class="strength-bar"><div class="strength-fill" id="sfill"></div></div>
+      <div class="strength-checks">
+        <div class="ck" id="ck-len"><div class="ck-dot"></div>8+ chars</div>
+        <div class="ck" id="ck-up"><div class="ck-dot"></div>Uppercase</div>
+        <div class="ck" id="ck-lo"><div class="ck-dot"></div>Lowercase</div>
+        <div class="ck" id="ck-num"><div class="ck-dot"></div>Number</div>
+        <div class="ck" id="ck-sym"><div class="ck-dot"></div>Symbol</div>
+      </div>
+    </div>
+    <div class="fg">
+      <label>Confirm password</label>
+      <div class="pw">
+        <input type="password" id="r-pass2" placeholder="Retype password" autocomplete="new-password" oninput="checkPass2()">
+        <button class="eye" onclick="tog('r-pass2',this)">Show</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Personal info -->
+  <div class="card">
+    <div class="ch">Personal information</div>
+    <div class="fg"><label>Full name</label><input type="text" id="r-name" placeholder="First and last name"></div>
+    <div class="fg"><label>Date of birth</label><input type="date" id="r-dob"></div>
+    <div class="fg">
+      <label>Phone number</label>
+      <div class="row2">
+        <select id="r-code">
+          <option value="+966">SA +966</option><option value="+971">AE +971</option>
+          <option value="+965">KW +965</option><option value="+974">QA +974</option>
+          <option value="+973">BH +973</option><option value="+968">OM +968</option>
+          <option value="+962">JO +962</option><option value="+961">LB +961</option>
+          <option value="+20">EG +20</option><option value="+212">MA +212</option>
+          <option value="+216">TN +216</option><option value="+213">DZ +213</option>
+          <option value="+1">US +1</option><option value="+44">GB +44</option>
+          <option value="+49">DE +49</option><option value="+33">FR +33</option>
+          <option value="+39">IT +39</option><option value="+34">ES +34</option>
+          <option value="+90">TR +90</option><option value="+86">CN +86</option>
+          <option value="+91">IN +91</option><option value="+92">PK +92</option>
+          <option value="+55">BR +55</option><option value="+27">ZA +27</option>
+        </select>
+        <input type="tel" id="r-phone" placeholder="5XX XXX XXXX">
+      </div>
+    </div>
+    <div class="fg">
+      <label>Company / Organisation <span class="opt-label">(optional)</span></label>
+      <input type="text" id="r-company" placeholder="Your company or leave blank">
+    </div>
+  </div>
+
+  <!-- Section 3: Admin settings -->
+  <div class="card">
+    <div class="ch">Admin settings <div class="ch-badge">Backup copy recipient</div></div>
+    <div class="fg">
+      <label>Admin email</label>
+      <input type="email" id="r-admin" placeholder="admin@company.com" autocomplete="off">
+    </div>
+    <div class="note info">
+      The admin will receive an encrypted copy of your vault on every backup.
+      The vault is AES-256 encrypted — the admin cannot read its contents without your device PIN.
+      Admin authentication uses the fixed device network password.
+    </div>
+  </div>
+
+  <div class="note err" id="r-err"></div>
+  <button class="btn" id="r-btn" onclick="doRegister()">Create Account &amp; Save to Device</button>
+</div>
+
+<!-- ======== RESTORE ======== -->
+<div id="t-res" style="display:none">
+  <div class="card">
+    <div class="ch">Sign in to your account</div>
+    <div class="fg"><label>Email address</label><input type="email" id="s-email" placeholder="you@example.com"></div>
+    <div class="fg"><label>Password</label><div class="pw"><input type="password" id="s-pass" placeholder="Your account password"><button class="eye" onclick="tog('s-pass',this)">Show</button></div></div>
+  </div>
+  <div class="card">
+    <div class="ch">Vault backup file <span class="opt-label">(optional)</span></div>
+    <div style="border:1.5px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer" onclick="document.getElementById('s-file').click()">
+      <input type="file" id="s-file" accept=".vault,.json,.enc,.bin" style="display:none" onchange="document.getElementById('fn').textContent=this.files[0]?this.files[0].name:'No file selected'">
+      <div style="font-size:22px;margin-bottom:6px">&#128190;</div>
+      <div style="font-size:13px">Tap to select backup file</div>
+      <div id="fn" style="font-size:11px;color:var(--dim);margin-top:4px">No file selected</div>
+    </div>
+  </div>
+  <div class="note err" id="s-err"></div>
+  <button class="btn" id="s-btn" onclick="doRestore()">Sign In &amp; Restore</button>
+</div>
+
+<!-- ======== SUCCESS ======== -->
+<div class="done" id="done">
+  <div style="font-size:42px;margin-bottom:14px">&#10003;</div>
+  <h2 id="done-title" style="font-size:20px;margin-bottom:8px"></h2>
+  <p style="font-size:14px;color:var(--dim);line-height:1.65" id="done-sub"></p>
+  <div class="steps">
+    <div style="font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">Continue on the device</div>
+    <div class="step"><div class="sn">1</div><div>Select your display language</div></div>
+    <div class="step"><div class="sn">2</div><div>Set a secure device PIN — minimum 8 characters including uppercase, lowercase, number, and symbol</div></div>
+    <div class="step"><div class="sn">3</div><div>Enroll 1 to 5 fingerprints — two scans per fingerprint</div></div>
+    <div class="step"><div class="sn">4</div><div>Reconnect to <strong>PwdMgr_Setup</strong> to finish WiFi and email backup settings</div></div>
+  </div>
+  <p style="font-size:12px;color:var(--dim);margin-top:16px;line-height:1.65">You can disconnect now and follow the device screen.<br>Reconnect after fingerprint setup to finish WiFi configuration.</p>
+</div>
+
+</div><!-- /wrap -->
+<script>
+/* ── Tab switch ─────────────────────────────────────────── */
+function sw(t){
+  document.getElementById('t-reg').style.display=t==='reg'?'':'none';
+  document.getElementById('t-res').style.display=t==='res'?'':'none';
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('on',(i===0)===(t==='reg')));
+}
+function tog(id,btn){const el=document.getElementById(id);const h=el.type==='password';el.type=h?'text':'password';btn.textContent=h?'Hide':'Show';}
+function isEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)}
+function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';el.scrollIntoView({behavior:'smooth',block:'nearest'});}
+function hideErr(id){document.getElementById(id).style.display='none';}
+
+/* ── Password strength checker ─────────────────────────── */
+function passChecks(v){
+  return{
+    len:  v.length>=8,
+    up:   /[A-Z]/.test(v),
+    lo:   /[a-z]/.test(v),
+    num:  /[0-9]/.test(v),
+    sym:  /[^A-Za-z0-9]/.test(v)
+  };
+}
+function checkPass(){
+  const v=document.getElementById('r-pass').value;
+  const c=passChecks(v);
+  const keys=['len','up','lo','num','sym'];
+  const ids=['ck-len','ck-up','ck-lo','ck-num','ck-sym'];
+  let score=0;
+  keys.forEach((k,i)=>{
+    const ok=c[k];
+    document.getElementById(ids[i]).className='ck'+(ok?' ok':'');
+    if(ok)score++;
+  });
+  const pct=[0,20,40,60,80,100][score];
+  const colors=['','#E74C3C','#E67E22','#F1C40F','#7DCEA0','#27AE60'];
+  const fill=document.getElementById('sfill');
+  fill.style.width=pct+'%';
+  fill.style.background=colors[score]||'var(--border)';
+  checkPass2();
+}
+function checkPass2(){
+  const p1=document.getElementById('r-pass').value;
+  const p2=document.getElementById('r-pass2').value;
+  const el=document.getElementById('r-pass2');
+  if(p2.length===0){el.className='';return;}
+  el.className=p1===p2?'valid':'invalid';
+}
+function checkEmail(el){
+  if(el.value.length===0){el.className='';return;}
+  el.className=isEmail(el.value)?'valid':'invalid';
+}
+
+/* ── Register ────────────────────────────────────────────── */
+async function doRegister(){
+  hideErr('r-err');
+  const email   = document.getElementById('r-email').value.trim();
+  const pass    = document.getElementById('r-pass').value;
+  const pass2   = document.getElementById('r-pass2').value;
+  const name    = document.getElementById('r-name').value.trim();
+  const dob     = document.getElementById('r-dob').value;
+  const code    = document.getElementById('r-code').value;
+  const phone   = document.getElementById('r-phone').value.trim();
+  const company = document.getElementById('r-company').value.trim();
+  const admin   = document.getElementById('r-admin').value.trim();
+
+  if(!isEmail(email))          return showErr('r-err','Enter a valid email address.');
+  const c=passChecks(pass);
+  if(!c.len) return showErr('r-err','Password must be at least 8 characters.');
+  if(!c.up)  return showErr('r-err','Password must include at least one uppercase letter (A-Z).');
+  if(!c.lo)  return showErr('r-err','Password must include at least one lowercase letter (a-z).');
+  if(!c.num) return showErr('r-err','Password must include at least one number (0-9).');
+  if(!c.sym) return showErr('r-err','Password must include at least one symbol (!@#$% etc).');
+  if(pass!==pass2)             return showErr('r-err','Passwords do not match. Please retype.');
+  if(!name)                    return showErr('r-err','Enter your full name.');
+  if(!dob)                     return showErr('r-err','Enter your date of birth.');
+  if(!phone)                   return showErr('r-err','Enter your phone number.');
+  if(!isEmail(admin))          return showErr('r-err','Enter a valid admin email address.');
+
+  const btn=document.getElementById('r-btn');
+  btn.disabled=true; btn.textContent='Saving to device...';
+  try{
+    const r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password:pass,name,dob,phone:code+phone,company,admin_email:admin})});
+    const j=await r.json();
+    if(j.success){
+      ['t-reg','t-res'].forEach(id=>document.getElementById(id).style.display='none');
+      document.querySelector('.tabs').style.display='none';
+      document.querySelector('.apb').style.display='none';
+      document.getElementById('done-title').textContent='Account Created!';
+      document.getElementById('done-sub').textContent='All details saved to device. Follow the steps on the device screen to complete setup.';
+      document.getElementById('done').style.display='block';
+    }else{
+      showErr('r-err',j.message||'Registration failed. Please try again.');
+      btn.disabled=false; btn.textContent='Create Account & Save to Device';
+    }
+  }catch(e){
+    showErr('r-err','Cannot reach device. Make sure you are connected to PwdMgr_Setup.');
+    btn.disabled=false; btn.textContent='Create Account & Save to Device';
+  }
+}
+
+/* ── Restore ─────────────────────────────────────────────── */
+async function doRestore(){
+  hideErr('s-err');
+  const email=document.getElementById('s-email').value.trim();
+  const pass=document.getElementById('s-pass').value;
+  if(!isEmail(email))return showErr('s-err','Enter a valid email address.');
+  if(!pass)          return showErr('s-err','Enter your password.');
+  const btn=document.getElementById('s-btn');
+  btn.disabled=true; btn.textContent='Restoring...';
+  try{
+    const form=new FormData();
+    form.append('email',email);form.append('password',pass);
+    const f=document.getElementById('s-file').files[0];
+    if(f)form.append('vault',f);
+    const r=await fetch('/api/restore',{method:'POST',body:form});
+    const j=await r.json();
+    if(j.success){
+      ['t-reg','t-res'].forEach(id=>document.getElementById(id).style.display='none');
+      document.querySelector('.tabs').style.display='none';
+      document.querySelector('.apb').style.display='none';
+      document.getElementById('done-title').textContent='Welcome back!';
+      document.getElementById('done-sub').textContent=j.vaultRestored?'Vault restored successfully. Follow the steps on the device.':'Login successful. Follow the steps on the device.';
+      document.getElementById('done').style.display='block';
+    }else{
+      showErr('s-err',j.message||'Incorrect email or password.');
+      btn.disabled=false; btn.textContent='Sign In & Restore';
+    }
+  }catch(e){
+    showErr('s-err','Cannot reach device. Make sure you are connected to PwdMgr_Setup.');
+    btn.disabled=false; btn.textContent='Sign In & Restore';
+  }
+}
+</script>
+</body>
+</html>

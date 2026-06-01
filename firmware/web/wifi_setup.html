@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Password Manager — Network Setup</title>
+<style>
+:root{--bg:#0a0a0a;--card:#141414;--border:#252523;--inp:#1c1c1a;--accent:#378ADD;--text:#e8e8e0;--dim:#6a6a62;--ok:#27AE60;--err:#E74C3C;--warn:#E67E22;--r:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:20px 16px 48px}
+.wrap{max-width:440px;margin:0 auto}
+.logo{font-family:"Courier New",monospace;font-size:20px;letter-spacing:4px;color:var(--accent);text-align:center;padding-top:8px;margin-bottom:6px}
+.title{text-align:center;font-size:17px;font-weight:600;margin-bottom:3px}
+.sub{text-align:center;font-size:13px;color:var(--dim);margin-bottom:22px}
+/* Progress steps */
+.prog{display:flex;align-items:flex-start;justify-content:center;margin-bottom:24px;gap:0}
+.ps{display:flex;flex-direction:column;align-items:center;gap:5px}
+.pd{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.pd.done{background:var(--ok);color:#fff}
+.pd.now{background:var(--accent);color:#fff}
+.pd.off{background:#1e1e1c;color:var(--dim);border:1px solid #2a2a28}
+.pl{font-size:10px;color:var(--dim);white-space:nowrap}
+.pline{width:30px;height:1px;margin:15px 3px 0;flex-shrink:0}
+.pline.done{background:var(--ok)}.pline.off{background:#2a2a28}
+/* AP badge */
+.apb{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px 15px;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.apd{width:8px;height:8px;border-radius:50%;background:var(--ok);flex-shrink:0}
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:12px}
+.ch{display:flex;align-items:center;gap:10px;margin-bottom:15px}
+.ci{width:28px;height:28px;border-radius:7px;background:rgba(55,138,221,.12);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ct{font-size:13px;font-weight:600}.cs{font-size:11px;color:var(--dim);margin-top:1px}
+/* Form */
+.fg{margin-bottom:13px}.fg:last-child{margin-bottom:0}
+label{display:block;font-size:11px;color:var(--dim);margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+input,select{width:100%;background:var(--inp);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-size:15px;outline:none;-webkit-appearance:none;transition:border-color .2s}
+input:focus,select:focus{border-color:var(--accent)}
+input::placeholder{color:var(--dim);font-size:14px}
+input.prefilled{border-color:#2a4a2a;background:#111811;color:#9ad09a}
+.pw{position:relative}.pw input{padding-right:46px}
+.eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;padding:4px}
+/* Presets */
+.presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.pb{padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--inp);color:var(--dim);font-size:12px;cursor:pointer;transition:all .15s}
+.pb.on{border-color:var(--accent);color:var(--accent);background:rgba(55,138,221,.1)}
+/* Notes */
+.note{border-radius:8px;padding:11px 13px;font-size:12px;line-height:1.65;margin-bottom:12px}
+.note.info{background:rgba(55,138,221,.08);border:1px solid rgba(55,138,221,.2);color:#7ab8e8}
+.note.warn{background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.2);color:#f0a060}
+.note.lock{background:rgba(150,150,140,.05);border:1px solid rgba(150,150,140,.15);color:#9a9a90}
+.note.err{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.25);color:#ff8a80;display:none}
+.note.ok{background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.25);color:#6de89e;display:none}
+.prefilled-badge{font-size:10px;background:rgba(39,174,96,.15);color:#6de89e;padding:2px 7px;border-radius:4px;display:inline-block;margin-left:6px;vertical-align:middle}
+/* Buttons */
+.btn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:600;cursor:pointer;margin-bottom:8px;transition:opacity .2s}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.sec{background:transparent;border:1px solid var(--border);color:var(--dim);font-size:14px;padding:11px}
+/* Done */
+.done{display:none;text-align:center;padding:28px 8px}
+.summary{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-top:18px;text-align:left}
+.sr{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;font-size:13px;line-height:1.5}.sr:last-child{margin-bottom:0}
+.tag{font-size:10px;font-family:"Courier New",monospace;padding:2px 7px;border-radius:4px;white-space:nowrap;margin-top:1px;flex-shrink:0}
+.tag.g{background:rgba(39,174,96,.15);color:#6de89e}
+.tag.w{background:rgba(150,150,140,.1);color:#9a9a90}
+option{background:#1c1c1a}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="logo">[ PM ]</div>
+<div class="title">Network &amp; Email Setup</div>
+<div class="sub">Step 3 of 3 — Final configuration</div>
+
+<!-- Progress -->
+<div class="prog">
+  <div class="ps"><div class="pd done">&#10003;</div><div class="pl">Account</div></div>
+  <div class="pline done"></div>
+  <div class="ps"><div class="pd done">&#10003;</div><div class="pl">Device</div></div>
+  <div class="pline done"></div>
+  <div class="ps"><div class="pd now">3</div><div class="pl">Network</div></div>
+</div>
+
+<div class="apb">
+  <div class="apd"></div>
+  <div><div style="font-weight:600;font-size:13px">PwdMgr_Setup</div><div style="font-size:11px;color:var(--dim)">Local connection &middot; No internet required</div></div>
+</div>
+
+<div id="main-form">
+
+  <!-- WiFi Network -->
+  <div class="card">
+    <div class="ch"><div class="ci">&#9112;</div><div><div class="ct">Home / Office WiFi</div><div class="cs">Device uses this to send backup emails</div></div></div>
+    <div class="fg">
+      <label>Network name (SSID)</label>
+      <input type="text" id="w-ssid" placeholder="Your WiFi name" autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="fg">
+      <label>WiFi password</label>
+      <div class="pw"><input type="password" id="w-pass" placeholder="WiFi password" autocomplete="off"><button class="eye" onclick="tog('w-pass',this)">Show</button></div>
+    </div>
+  </div>
+
+  <!-- Email sender -->
+  <div class="card">
+    <div class="ch"><div class="ci">&#9993;</div><div><div class="ct">Email account for sending backups</div><div class="cs">SMTP credentials — device sends from this account</div></div></div>
+    <div class="note info">Encrypted vault backups are sent as email attachments on your chosen schedule. The vault is AES-256 encrypted before leaving the device.</div>
+    <label style="margin-bottom:7px">Email provider</label>
+    <div class="presets">
+      <div class="pb on" onclick="preset(this,'smtp.gmail.com',587,'gmail')">Gmail</div>
+      <div class="pb" onclick="preset(this,'smtp-mail.outlook.com',587,'other')">Outlook</div>
+      <div class="pb" onclick="preset(this,'smtp.mail.yahoo.com',587,'other')">Yahoo</div>
+      <div class="pb" onclick="preset(this,'smtp.mail.me.com',587,'other')">iCloud</div>
+      <div class="pb" onclick="preset(this,'','','custom')">Custom</div>
+    </div>
+    <div id="custom-smtp" style="display:none">
+      <div class="fg"><label>SMTP server</label><input type="text" id="smtp-srv" placeholder="smtp.yourprovider.com"></div>
+      <div class="fg"><label>SMTP port</label><input type="number" id="smtp-prt" placeholder="587" value="587"></div>
+    </div>
+    <div class="fg"><label>Sender email address</label><input type="email" id="smtp-email" placeholder="you@gmail.com" autocomplete="off"></div>
+    <div class="fg">
+      <label>Email password / App password</label>
+      <div class="pw"><input type="password" id="smtp-pass" placeholder="SMTP / App password" autocomplete="off"><button class="eye" onclick="tog('smtp-pass',this)">Show</button></div>
+    </div>
+    <div class="note warn" id="gmail-note"><strong>Gmail users:</strong> Use an <strong>App Password</strong> — not your regular Google password. Go to: Google Account &rarr; Security &rarr; 2-Step Verification &rarr; App Passwords.</div>
+  </div>
+
+  <!-- Backup recipients -->
+  <div class="card">
+    <div class="ch"><div class="ci">&#128100;</div><div><div class="ct">Backup recipients</div><div class="cs">Both receive encrypted vault on every backup</div></div></div>
+    <div class="fg">
+      <label>Your personal inbox</label>
+      <input type="email" id="to-user" placeholder="your personal inbox email" autocomplete="off">
+    </div>
+    <div class="fg">
+      <label>Admin email <span class="prefilled-badge" id="admin-badge" style="display:none">Saved from registration</span></label>
+      <input type="email" id="to-admin" placeholder="admin@company.com" autocomplete="off">
+    </div>
+    <div class="note lock">
+      <strong>Admin access model:</strong> The admin authenticates to this device by connecting to <span style="font-family:'Courier New',monospace">PwdMgr_Setup</span> with the fixed device network password — this <em>is</em> their credential, nothing else is stored. The admin receives an encrypted copy of your vault; its contents are unreadable without your PIN.
+    </div>
+  </div>
+
+  <div class="note err" id="note-err"></div>
+  <div class="note ok"  id="note-ok"></div>
+  <button class="btn sec" id="btn-test" onclick="testConn()">&#9654;&#160; Test SMTP connection</button>
+  <button class="btn" id="btn-save" onclick="saveAll()">Save &amp; Complete Setup</button>
+</div>
+
+<!-- Done -->
+<div class="done" id="done">
+  <div style="font-size:42px;margin-bottom:14px">&#10003;</div>
+  <h2 style="font-size:20px;margin-bottom:8px">All Done!</h2>
+  <p style="font-size:14px;color:var(--dim);line-height:1.65">Your device will connect to <strong id="f-net"></strong> and send encrypted backups automatically on your schedule.</p>
+  <div class="summary">
+    <div class="sr"><div class="tag g">WIFI</div><div>Connects to <span id="f-ssid"></span></div></div>
+    <div class="sr"><div class="tag g">USER</div><div>Backup emailed to <span id="f-user"></span></div></div>
+    <div class="sr"><div class="tag g">ADMIN</div><div>Encrypted copy emailed to <span id="f-admin"></span></div></div>
+    <div class="sr"><div class="tag w">KEY</div><div>Vault AES-256 encrypted — admin cannot decrypt without your PIN</div></div>
+    <div class="sr"><div class="tag w">AUTH</div><div>Admin authenticates via fixed device network password only</div></div>
+  </div>
+  <p style="font-size:12px;color:var(--dim);margin-top:18px;line-height:1.65">Setup is complete. This page will not be available again until a factory reset.<br>You may disconnect from PwdMgr_Setup.</p>
+</div>
+
+</div>
+<script>
+let SRV='smtp.gmail.com', PORT=587;
+
+// Load saved admin email from device on page open
+window.addEventListener('load', async () => {
+  try {
+    const r = await fetch('/api/config');
+    const j = await r.json();
+    if (j.admin_email) {
+      document.getElementById('to-admin').value = j.admin_email;
+      document.getElementById('to-admin').className = 'prefilled';
+      document.getElementById('admin-badge').style.display = 'inline-block';
+    }
+  } catch(e) {}
+});
+
+function preset(btn,srv,prt,type){
+  document.querySelectorAll('.pb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); SRV=srv; PORT=prt;
+  document.getElementById('custom-smtp').style.display=type==='custom'?'':'none';
+  document.getElementById('gmail-note').style.display=type==='gmail'?'':'none';
+}
+function tog(id,btn){const el=document.getElementById(id);const h=el.type==='password';el.type=h?'text':'password';btn.textContent=h?'Hide':'Show';}
+function clrMsg(){['err','ok'].forEach(t=>{const el=document.getElementById('note-'+t);el.style.display='none';el.textContent='';});}
+function showMsg(type,text){clrMsg();const el=document.getElementById('note-'+type);el.textContent=text;el.style.display='block';el.scrollIntoView({behavior:'smooth',block:'nearest'});}
+function isEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)}
+function collect(){
+  const c=document.getElementById('custom-smtp').style.display!=='none';
+  return{
+    wifi_ssid: document.getElementById('w-ssid').value.trim(),
+    wifi_pass: document.getElementById('w-pass').value,
+    smtp_server: c?document.getElementById('smtp-srv').value.trim():SRV,
+    smtp_port:   c?parseInt(document.getElementById('smtp-prt').value):PORT,
+    smtp_email:  document.getElementById('smtp-email').value.trim(),
+    smtp_pass:   document.getElementById('smtp-pass').value,
+    to_user:     document.getElementById('to-user').value.trim(),
+    to_admin:    document.getElementById('to-admin').value.trim(),
+  };
+}
+function validate(d){
+  if(!d.wifi_ssid)            return 'Enter your WiFi network name.';
+  if(!d.wifi_pass)            return 'Enter your WiFi password.';
+  if(!d.smtp_server)          return 'Select or enter an SMTP server.';
+  if(!isEmail(d.smtp_email))  return 'Enter a valid sender email.';
+  if(!d.smtp_pass)            return 'Enter your email password or app password.';
+  if(!isEmail(d.to_user))     return 'Enter a valid personal inbox email.';
+  if(!isEmail(d.to_admin))    return 'Enter a valid admin email.';
+  if(d.to_user===d.to_admin)  return 'Personal inbox and admin email must be different.';
+  return null;
+}
+async function testConn(){
+  const d=collect(), e=validate(d);
+  if(e)return showMsg('err',e);
+  const btn=document.getElementById('btn-test');
+  btn.disabled=true; btn.textContent='Testing...'; clrMsg();
+  try{
+    const r=await fetch('/api/test-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+    const j=await r.json();
+    if(j.success) showMsg('ok','Connection successful! Test email sent to '+d.to_user);
+    else          showMsg('err','SMTP error: '+(j.message||'Check credentials and try again.'));
+  }catch{showMsg('err','Lost connection. Stay on PwdMgr_Setup.');}
+  btn.disabled=false; btn.innerHTML='&#9654;&#160; Test SMTP connection';
+}
+async function saveAll(){
+  const d=collect(), e=validate(d);
+  if(e)return showMsg('err',e);
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true; btn.textContent='Saving & connecting\u2026'; clrMsg();
+  try{
+    const r=await fetch('/api/save-network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+    const j=await r.json();
+    if(j.success){
+      document.getElementById('main-form').style.display='none';
+      document.getElementById('f-net').textContent=d.wifi_ssid;
+      document.getElementById('f-ssid').textContent=d.wifi_ssid;
+      document.getElementById('f-user').textContent=d.to_user;
+      document.getElementById('f-admin').textContent=d.to_admin;
+      document.getElementById('done').style.display='block';
+    }else{
+      showMsg('err',j.message||'Save failed. Try again.');
+      btn.disabled=false; btn.textContent='Save & Complete Setup';
+    }
+  }catch{
+    showMsg('err','Lost connection to device. Reconnect to PwdMgr_Setup and retry.');
+    btn.disabled=false; btn.textContent='Save & Complete Setup';
+  }
+}
+</script>
+</body>
+</html>
