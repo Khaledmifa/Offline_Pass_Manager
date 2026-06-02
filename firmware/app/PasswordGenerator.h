@@ -9,7 +9,7 @@ struct PwGenOptions {
   bool    upper   = true;
   bool    lower   = true;
   bool    digits  = true;
-  bool    symbols = false;
+  bool    symbols = true;
 };
 
 class PasswordGenerator {
